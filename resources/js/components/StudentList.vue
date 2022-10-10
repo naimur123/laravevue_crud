@@ -20,7 +20,7 @@
             
             
             &nbsp;
-            <button class="col-md-4 my-2 btn btn-success" @click="save">Submit</button>
+            <button class="col-md-4 my-2 btn btn-success" @click="save" >{{ isEdit ? 'Update': 'Save' }}</button>
         </div>
         <div class="row justify-content-center" v-if="list.length>0">
             <div class="col-md-8">
@@ -31,16 +31,28 @@
                         <th scope="col">Name</th>
                         <th scope="col">Subject</th>
                         <th scope="col">Number</th>
+                        <th scope="col">Actions</th>
                         </tr>
                     </thead>
                     <!-- <tbody v-for="student in list" :key="student.id"> -->
                     <!-- <tbody v-for="student in list" :key="student.id"> -->
-                    <tbody v-for="(student,key) in list" :key="student.key">
+                    <tbody v-for="(student,key) in list" :key="student.id">
                         <tr>
                             <td >{{ key }}</td>
                             <td>{{ student.name }}</td>
                             <td>{{ student.subject }}</td>
                             <td>{{ student.number }}</td>
+                            <td>
+                                <button
+                                    class="btn btn-warning pl-2"
+                                    @click="updateStudent(student,student.id)"
+                            >Edit</button>
+                                <button
+                                        class="btn btn-danger"
+                                        @click="deleteStudent(student.id)"
+                                >Delete</button>
+                            </td>
+                            
                         </tr>
                     </tbody>
                 </table>
@@ -58,14 +70,17 @@ import axios from 'axios';
     export default {
         data(){
             return {
-                count: 0,
+                
                 list:[],
 
                 item:{
                     name:'',
                     subject:'',
                     number:''
-                }
+                },
+                isEdit: false,
+                temp_id: null
+
             }
 
         },
@@ -73,9 +88,6 @@ import axios from 'axios';
             this.fetchAll()
         },
         methods:{
-            increment(){
-                this.count++
-            },
           fetchAll(){
             try{
                 axios.get('/student')
@@ -86,15 +98,67 @@ import axios from 'axios';
                
             },
            save(){
+            let method = axios.post;
+            let url = '/student/store';
+            if(this.temp_id != null){
+                method = axios.post;
+                url = `/student/update/${this.temp_id}`
+            }
             try{
-                axios.post('/student/store', this.item)
-                .then(res=>({
+                // axios.post('/student/store', this.item)
+                // .then(res=>(
+                //      this.fetchAll()
+                // ))
+                method(url, this.item).then(res => {
+                        this.fetchAll()
+                        this.item = {
+                            name: "",
+                            subject: "",
+                            number: ""
+                        }
+                        this.temp_id = null
+                        this.isEdit = false
+                    })
 
-                }))
 
             }catch(e){
                 console.log(e)
             }
+           },
+           updateStudent(student,id){
+            console.log(id)
+              this.item ={
+                name : student.name,
+                subject: student.subject,
+                number: student.number
+
+
+              }
+              this.isEdit = true
+              this.temp_id = id
+            //   try{
+            //     axios.put(`/student/update/${id}`,this.item).then(
+            //         res=>(
+            //             this.fetchAll()
+            //         )
+            //     )
+
+            //   }catch(e){
+            //     console.log(e)
+            //   }
+
+           },
+           
+           deleteStudent(id){
+            console.log(id)
+            try{
+                axios.post(`/student/delete/${id}`).then(res=> {
+                this.fetchAll()
+               })
+            }catch(e){
+                console.log(e)
+            }
+               
            }
         }
         

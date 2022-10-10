@@ -74,7 +74,11 @@ class StudentController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $student = Student::find($id);
+        $student->name = $request->name;
+        $student->subject = $request->subject;
+        $student->number = $request->number;
+        $student->save();
     }
 
     /**
@@ -83,8 +87,9 @@ class StudentController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function delete($id)
     {
-        //
+        $student = Student::find($id);
+        $student->delete();
     }
 }
